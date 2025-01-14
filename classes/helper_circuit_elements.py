@@ -17,75 +17,42 @@ class Cos2Phi: ...
 
 ### for circuit_elements.py ###
 
-def rolling_average(array, window_size):
-    """
-    Computes the rolling average of a 1D NumPy array.
-    Parameters:
-        array (numpy.ndarray): Input 1D array.
-        window_size (int): Size of the rolling window.
-    Returns: numpy.ndarray: Array of rolling averages.
-    """
-    # Use np.convolve to compute rolling average
-    kernel = np.ones(window_size) / window_size
-    rolling_avg = np.convolve(array, kernel, mode='valid')
-    return rolling_avg
-
-def find_all_solutions(b, x_min, x_max, num_points=1000):
-    """
-    Finds all solutions to sin(x) = b * x within a specified interval [x_min, x_max].
-    Parameters:
-        b (float): Coefficient in the equation sin(x) = b * x.
-        x_min (float): Minimum value of the interval.
-        x_max (float): Maximum value of the interval.
-        num_points (int): Number of points to scan for initial guesses.
-    Returns: solutions (list): List of solutions (roots) in the interval.
-    """
-    # Define the function f(x) = sin(x) - b * x
-    def f(x):
-        return np.sin(x) - b * x
-
-    # Generate initial guesses using a linspace
-    x_values = np.linspace(x_min, x_max, num_points)
-    solutions = []
-
-    # Check sign changes between consecutive points for root existence
-    for i in range(len(x_values) - 1):
-        x_left, x_right = x_values[i], x_values[i + 1]
-        if f(x_left) * f(x_right) < 0:  # Sign change indicates a root
-            # Use root_scalar to find the root in the interval
-            sol = root_scalar(f, bracket=[x_left, x_right], method='brentq')
-            if sol.converged:
-                solutions.append(sol.root)
-
-    return solutions
-
 def invert_phase_relation(leg: Leg) -> Leg:
     '''
-    Within a given phi_T range, this will find all the permissible current values. Note
-    now this is different than saying it will find all the permissible energy levels within
-    that same region.
+    Within a given phi_T range, this will find all the permissible current values that satisfy
+    the phase/current condition.
     '''
     
     def calculate_inverted_phase(mod_2pi):
-        '''Meat of the whole operation. Could use cleaning up'''
-        combined_phase, junction_phase = np.meshgrid(leg.phase, leg.phase)
-        ind_phase = combined_phase - junction_phase + mod_2pi
-        current_diff = leg.junction.current(junction_phase) - leg.ind.current(ind_phase)
-        chi_index, phi_total_index  = sign_switch(current_diff)
-        valid_total_phase = combined_phase[0, phi_total_index]
-        valid_chi_phase = junction_phase[chi_index, 0]
-        valid_current = leg.junction.current(valid_chi_phase)
-        valid_ind_phase = valid_chi_phase + mod_2pi # NOTE: This is non-compact
+        '''
+        Inverts the phase relation of phase across leg and phase of defining variable chi
+        - Creates mesh grid of chi and phi_T (where phi_T has already been mod 2pied)
+        - Finds where in each row there are solutions (the difference changes sign)
+        - Returns a data array
+        '''
+        phi_T, chi = np.meshgrid(leg.phase, leg.phase)
+        phi_ind = phi_T - chi + mod_2pi
+        current_diff = leg.junction.current(chi) - leg.ind.current(phi_ind)
+        chi_index, phi_T_index = sign_switch(current_diff)
+        # TODO: ADD MORE PRECISE VALUES TO CHI USING THE ROOT SCALAR FUNCTION
+        valid_phi_T = phi_T[0, phi_T_index]
+        valid_chi = chi[chi_index, 0]
+        valid_current = leg.junction.current(valid_chi)
+        valid_phi_ind = valid_chi + mod_2pi # NOTE: This is non-compact
         data = np.array((
-            valid_total_phase,
+            valid_phi_T,
             valid_current,
-            valid_chi_phase,
-            valid_ind_phase)).T #VERY IMPORTANT LINE. WOULD BE NICE TO PUT THIS ELSEWHERE WHERE IT CAN MORE EASILY BE MODIFIED.
-        return data        
+            valid_chi,
+            valid_phi_ind)).T # VERY IMPORTANT AS THIS DEFINES THE DATA STRUCTURE'S ORDER
+        return data
 
 
     def mod_2pi_shifter(direction):
-        '''Shifts inductor's phase by 2pi forward/backwards until no valid solutions are found'''
+        '''
+        Shifts inductor's phase by 2pi forward/backwards until no valid solutions are found
+        - This is identical to taking any other variable mod 2pi. The single relation has
+          the singular degree of freedom being the modulo 2pi that the relation take on.
+        '''
         if direction == 'forward':
             sign = 1
         elif direction == 'backward':
@@ -105,7 +72,7 @@ def invert_phase_relation(leg: Leg) -> Leg:
     mod_2pi_shifter('backward')
     return leg
 
-def average_contiguous_columns(arr):
+def average_contiguous_columns(arr): # Unneeded if each phi_T is given a precise chi and current value
     """
     Averages the values in all columns except the first for each contiguous unique entry in the first column.
     Parameters: arr (numpy.ndarray): Input 2D array with shape (n, m).
@@ -191,15 +158,20 @@ def sum_matching_rows(arr1, arr2):
     return np.array(result)
 
 def sign_switch(sign_change_mat):
-    '''Checks for a sign change and also makes every value of phi_T present on the grid'''
+    '''
+    - Checks for a sign change in a sign_change matrix
+    - Makes every value of phi_T present on the grid'''
     signs = np.sign(sign_change_mat)
-    sign_changes = signs[:, :-1] * signs[:, 1:] < 0 # Change this to take left or right side of sign change
-    chi, phi_total = np.nonzero(sign_changes)  # Returns a tuple of arrays (row indices, column indices)
-    if chi.size != 0:
-        phase_grid = np.stack((chi, phi_total)).T
-        phase_grid = add_interpolated_rows(phase_grid)
-        chi, phi_total = phase_grid[:, 0], phase_grid[:, 1]
-    return (chi, phi_total)
+    sign_change_bools = signs[:, :-1] * signs[:, 1:] < 0
+    valid_chi, valid_phi_T = np.nonzero(sign_change_bools)
+    if valid_chi.size != 0:
+        valid_phases = np.stack((valid_chi, valid_phi_T)).T
+        valid_gridded = add_interpolated_rows(valid_phases) 
+        valid_chi, valid_gridded_phi_T = valid_gridded[:, 0], valid_gridded[:, 1]
+        return (valid_chi, valid_gridded_phi_T)
+    return (valid_chi, valid_phi_T) # Should only return when valid_chi and valid_phi_T are empty
+
+
 
 ### Misc Functions ###
 
@@ -211,3 +183,49 @@ def timing_decorator(func):
         print(f"{func.__name__} executed in {end_time - start_time:.6f} seconds")
         return result  # Return the function's result
     return wrapper
+
+
+
+### Unused Functions ###
+
+def rolling_average(array, window_size):
+    """
+    Computes the rolling average of a 1D NumPy array.
+    Parameters:
+        array (numpy.ndarray): Input 1D array.
+        window_size (int): Size of the rolling window.
+    Returns: numpy.ndarray: Array of rolling averages.
+    """
+    # Use np.convolve to compute rolling average
+    kernel = np.ones(window_size) / window_size
+    rolling_avg = np.convolve(array, kernel, mode='valid')
+    return rolling_avg
+
+def find_all_solutions(b, x_min, x_max, num_points=1000):
+    """
+    Finds all solutions to sin(x) = b * x within a specified interval [x_min, x_max].
+    Parameters:
+        b (float): Coefficient in the equation sin(x) = b * x.
+        x_min (float): Minimum value of the interval.
+        x_max (float): Maximum value of the interval.
+        num_points (int): Number of points to scan for initial guesses.
+    Returns: solutions (list): List of solutions (roots) in the interval.
+    """
+    # Define the function f(x) = sin(x) - b * x
+    def f(x):
+        return np.sin(x) - b * x
+
+    # Generate initial guesses using a linspace
+    x_values = np.linspace(x_min, x_max, num_points)
+    solutions = []
+
+    # Check sign changes between consecutive points for root existence
+    for i in range(len(x_values) - 1):
+        x_left, x_right = x_values[i], x_values[i + 1]
+        if f(x_left) * f(x_right) < 0:  # Sign change indicates a root
+            # Use root_scalar to find the root in the interval
+            sol = root_scalar(f, bracket=[x_left, x_right], method='brentq')
+            if sol.converged:
+                solutions.append(sol.root)
+
+    return solutions

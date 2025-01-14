@@ -47,8 +47,17 @@ def make_assymmetric_linrhombus(EJ1, EL1, EJ2, EL2) -> LinRhombus:
     return linrhombus
 
 def plot_circuit_class(circuit):
-    plt.scatter(circuit.phi_T, circuit.E, s=0.5, c=circuit.stability_colormap)
-    plt.vlines(-np.pi/2, min(circuit.E), max(circuit.E))
-    plt.vlines(np.pi/2, min(circuit.E), max(circuit.E))
-    plt.grid()
+    size = 0.5
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
+    ax[0].scatter(circuit.phi_T, circuit.I, s=size, c=circuit.stability_colormap)
+    ax[0].set_xlabel(r'$\phi_T$')
+    ax[0].set_ylabel(r'I')
+    ax[0].set_title(f'Current Phase Relation of {circuit.name}')
+    ax[0].grid()
+    ax[1].scatter(circuit.phi_T, circuit.E, s=size, c=circuit.stability_colormap)
+    ax[1].set_xlabel(r'$\phi_T$')
+    ax[1].set_ylabel(r'I')
+    ax[1].set_title(f'Energy Phase Relation of {circuit.name}')
+    ax[1].grid()
+    fig.tight_layout()
     plt.show()
