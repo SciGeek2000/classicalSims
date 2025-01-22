@@ -6,7 +6,7 @@
         {
             "label": "Run Tests",
             "type": "shell",
-            "command": "python -m unittest ./classicalSims/tests/unit/test_test.py", // Need to tell it explicitly where to look
+            "command": "python -m unittest discover -s ./tests -v",
             "group": {
                 "kind": "test",
                 "isDefault": true

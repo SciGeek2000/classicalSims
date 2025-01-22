@@ -51,18 +51,15 @@ if __name__ == "__main__":
         linrhombus.calculate_circuit(phi_T, threaded_flux)
         return linrhombus
 
+
+    print('hi')
     ### Run Circuit ###
-    for i in range(10, 200, 2):
-        circuit = run_leg(i,1)
-        plot_circuit_class(circuit)
-    # circuit = run_sym_linrhombus(150,1)
-    # print(circuit.leg1.name)
-    plot_circuit_class(circuit)
-    # plot_circuit_class(circuit.leg2)
+    # EJ = 1
+    # circuit = run_leg(EJ,1)
+    # print(f'EJ = {EJ}')
     # plot_circuit_class(circuit)
-
-    # print(f'EJ = {i}')
-
+    
+    ### EXTRA CODE ###
     # params = command_line_arg_setting()
     # run_leg(*params)
     
