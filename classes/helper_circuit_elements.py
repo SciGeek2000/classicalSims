@@ -16,6 +16,14 @@ class Cos2Phi: ...
 
 
 ### for circuit_elements.py ###
+def precise_sol(leg, chi_min, chi_max, phi_T_val, points = 100):
+    chi_range = np.linspace(chi_min, chi_max, points)
+    # phi_T, chi = np.meshgrid()
+    phi_ind = phi_T - chi
+    diff_row = leg.junction.current(chi) - leg.ind.current(phi_ind)
+    valid_chi, _ = sign_switch(diff_row)
+    return valid_chi
+
 
 def invert_phase_relation(leg: Leg) -> Leg:
     '''
@@ -36,6 +44,7 @@ def invert_phase_relation(leg: Leg) -> Leg:
         chi_index, phi_T_index = sign_switch(current_diff)
         # TODO: ADD MORE PRECISE VALUES TO CHI USING THE ROOT SCALAR FUNCTION
         valid_phi_T = phi_T[0, phi_T_index]
+        # valid_chi = precise_sol(leg, chi[chi_index, 0], chi[chi_index-1, 0], valid_phi_T)
         valid_chi = chi[chi_index, 0]
         valid_current = leg.junction.current(valid_chi)
         valid_phi_ind = valid_chi + mod_2pi # NOTE: This is non-compact
@@ -74,9 +83,9 @@ def invert_phase_relation(leg: Leg) -> Leg:
 
 def average_contiguous_columns(arr): # Unneeded if each phi_T is given a precise chi and current value
     """
-    Averages the values in all columns except the first for each contiguous unique entry in the first column.
+    Avgs the values in all columns except the first for each contiguous unique entry in column 0
     Parameters: arr (numpy.ndarray): Input 2D array with shape (n, m).
-    Returns: numpy.ndarray: Output array with each row being [unique_value, avg_col1, avg_col2, ...].
+    Returns: numpy.ndarray: Output array with each row = [unique_value, avg_col1, avg_col2, ...].
     """
     first_col = arr[:, 0]
     other_cols = arr[:, 1:]
@@ -130,7 +139,7 @@ def add_interpolated_rows(arr, delta: int = 20):
 
 def sum_matching_rows(arr1, arr2):
     """
-    Sums all possible combinations of rows from two matrices where the first column values are equal.
+    Sums all possible combinations of rows from two matrices where the first column values are =.
     Parameters:
         arr1 (numpy.ndarray): First array of shape (n, k).
         arr2 (numpy.ndarray): Second array of shape (m, k).
@@ -164,12 +173,12 @@ def sign_switch(sign_change_mat):
     signs = np.sign(sign_change_mat)
     sign_change_bools = signs[:, :-1] * signs[:, 1:] < 0
     valid_chi, valid_phi_T = np.nonzero(sign_change_bools)
-    if valid_chi.size != 0:
-        valid_phases = np.stack((valid_chi, valid_phi_T)).T
-        valid_gridded = add_interpolated_rows(valid_phases) 
-        valid_chi, valid_gridded_phi_T = valid_gridded[:, 0], valid_gridded[:, 1]
-        return (valid_chi, valid_gridded_phi_T)
-    return (valid_chi, valid_phi_T) # Should only return when valid_chi and valid_phi_T are empty
+    if valid_chi.size == 0:
+        return valid_chi, valid_phi_T
+    valid_phases = np.stack((valid_chi, valid_phi_T)).T
+    valid_gridded = add_interpolated_rows(valid_phases) 
+    valid_chi, valid_gridded_phi_T = valid_gridded[:, 0], valid_gridded[:, 1]
+    return (valid_chi, valid_gridded_phi_T)
 
 
 

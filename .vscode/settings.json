@@ -1,0 +1,18 @@
+{
+    "editor.stickyScroll.scrollWithEditor": true,
+    "workbench.tree.enableStickyScroll": true,
+    "notebook.stickyScroll.enabled": true,
+    "editor.stickyTabStops": true,
+    "terminal.integrated.stickyScroll.enabled": true,
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.autoImportCompletions": false,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./classicalSims",
+        "-p",
+        "*test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
+}

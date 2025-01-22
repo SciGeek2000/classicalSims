@@ -19,10 +19,13 @@ from helper_main import *
 
 
 if __name__ == "__main__":
-    '''Input here either a YAML file recieved from the command line, command line arguments, or directly set params'''
+    '''
+    Input here either a YAML file recieved from the command line,
+    command line arguments, or directly set params
+    '''
 
     grid_spacing = 0.005
-    brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are already accounted for
+    brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are accounted for
     phi_T = np.arange(-brillouin_zone*np.pi, brillouin_zone*np.pi, grid_spacing)
 
     set_units('Ones')
@@ -31,8 +34,7 @@ if __name__ == "__main__":
     def run_leg(EJ, EL):
         '''Creates a run of a single leg'''
         leg = make_phi_leg(EJ=EJ, EL=EL)
-        leg.calculate_circuit(phi_T)
-        leg.name = 'JJ + Inductor'
+        leg.calculate_circuit(phi_T, threaded_flux=np.pi)
         return leg
 
     @timing_decorator
@@ -40,7 +42,6 @@ if __name__ == "__main__":
         '''Creates a run of a symmetric linear rhombus'''
         linrhombus = make_symmetric_linrhombus(sym_EJ=sym_EJ, sym_EL=sym_EL)
         linrhombus.calculate_circuit(phi_T, threaded_flux)
-        linrhombus.name = 'Symmetric Rhombus'
         return linrhombus
 
     @timing_decorator
@@ -48,21 +49,21 @@ if __name__ == "__main__":
         '''Creates a run of a assymetric linear rhombus'''
         linrhombus = make_assymmetric_linrhombus(EJ1, EL1, EJ2, EL2)
         linrhombus.calculate_circuit(phi_T, threaded_flux)
-        linrhombus.name = 'Asymmetric Rhombus'
         return linrhombus
 
     ### Run Circuit ###
+    for i in range(10, 200, 2):
+        circuit = run_leg(i,1)
+        plot_circuit_class(circuit)
+    # circuit = run_sym_linrhombus(150,1)
+    # print(circuit.leg1.name)
+    plot_circuit_class(circuit)
+    # plot_circuit_class(circuit.leg2)
+    # plot_circuit_class(circuit)
 
-    # for i in range(1, 40, 10):
-    #     circuit = run_sym_linrhombus(i,1)
-    #     print(i)
-    #     plot_circuit_class(circuit)
-    # leg = run_leg(100, 1)
-    # plot_circuit_class(leg)
+    # print(f'EJ = {i}')
 
-    linrhombus = run_sym_linrhombus(100, 1)
-    plot_circuit_class(linrhombus)
     # params = command_line_arg_setting()
     # run_leg(*params)
-    # for i in range(1, 2, 1):
-        # run_asym_linrhombus(20, 1, i, 1)
+    
+# NOTE: BUG: FOR TYPICAL VALUES OF EJ AND EL, THE CPR LOOKS OFF!

@@ -105,9 +105,9 @@ class Inductor:
 
 class Leg:
     def __init__(self, junction, ind):
+        Leg.name = 'JJ + Inductor'
         self.junction = junction
         self.ind = ind
-
     def calculate_circuit(self, phase, threaded_flux=0) -> np.ndarray:
         self.phase = phase
         self.current(phase, threaded_flux)
@@ -117,7 +117,7 @@ class Leg:
         return self.data #[[current_data], [E], [stability_bool]]
 
     def current(self, phase, threaded_flux=0) -> np.ndarray:
-        self.phase = phase
+        self.phase = phase + threaded_flux
         self.current_data = np.empty((0,4)) # [[phi_T], [I], [chi], [phi_ind]]
         self = invert_phase_relation(self)
         self.current_data = average_contiguous_columns(self.current_data)
@@ -169,12 +169,17 @@ class LinRhombus:
     def __init__(self, leg1: Leg, leg2: Leg):
         self.leg1 = leg1
         self.leg2 = leg2
+        if leg1.junction.EJ == leg2.junction.EJ and leg1.ind.EL == leg2.ind.EL: 
+            self.name = 'Asymmetric Rhombus'
+        else:
+            self.name = 'Symmetric Rhombus'
+            
 
     def calculate_circuit(self, phase, threaded_flux=np.pi):
         self.phase = phase
         self.threaded_flux = threaded_flux
         self.leg1.calculate_circuit(phase, threaded_flux=0)
-        self.leg2.calculate_circuit(phase+threaded_flux, threaded_flux=threaded_flux) # VERIFY SIGN TREATMENT
+        self.leg2.calculate_circuit(phase, threaded_flux=threaded_flux) # VERIFY SIGN TREATMENT
         self.data = sum_matching_rows(self.leg1.data, self.leg2.data) # Only chi column will not make sense
         self.phi_T = self.data[:,0]/2
         self.I = self.data[:,1]
