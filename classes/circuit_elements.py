@@ -177,7 +177,10 @@ class LinRhombus:
             self.EL = leg1.ind.EL
         else:
             self.name = 'Asymmetric Rhombus'
-            
+            self.EJ1 = leg1.junction.EJ
+            self.EL1 = leg1.ind.EL
+            self.EJ2 = leg2.junction.EJ
+            self.EL2 = leg2.ind.EL
 
     def calculate_circuit(self, phase, threaded_flux=np.pi):
         self.phase = phase

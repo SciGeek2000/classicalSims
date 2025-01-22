@@ -17,22 +17,22 @@ class LegTests(unittest.TestCase):
         set_units('Ones')
         self.nonhyst_leg = Leg(JJ(1), Inductor(1))
         self.hyst_leg = Leg(JJ(40), Inductor(1))
+        self.nonhyst_leg.calculate_circuit(self.phi_T)
+        self.hyst_leg.calculate_circuit(self.phi_T)
 
     def test_range(self):
         '''Ensures output phi_T range does not exceed input phi_T range'''
-        self.nonhyst_leg.calculate_circuit(self.phi_T)
-        self.hyst_leg.calculate_circuit(self.phi_T)
-        self.assertTrue(
-          np.max(self.phi_T) >= np.max(self.hyst_leg.phi_T) and
-          np.min(self.phi_T) <= np.min(self.hyst_leg.phi_T),
-          'Bounds are violated in hystertic leg')       
-        self.assertTrue(
-          np.max(self.phi_T) >= np.max(self.nonhyst_leg.phi_T) and
-          np.min(self.phi_T) <= np.max(self.nonhyst_leg.phi_T),
-          'Bounds are violated in non-hysteretic leg')
+        self.assertGreaterEqual(np.max(self.phi_T), np.max(self.hyst_leg.phi_T),
+          'Maximum bound of input phi_T violated by output in hysteretic case')
+        self.assertLessEqual(np.min(self.phi_T), np.min(self.hyst_leg.phi_T),
+          'Minimum bound of input phi_T violated by output in hysteretic case')
+        self.assertGreaterEqual(np.max(self.phi_T), np.max(self.nonhyst_leg.phi_T),
+          'Maximum bound of input phi_T violated by output in non-hysteretic case')
+        self.assertLessEqual(np.min(self.phi_T), np.min(self.nonhyst_leg.phi_T),
+          'Minimum bound of input phi_T violated by output in non-hysteretic case')
         
     def test_gridded_values(self):
-        # Ensures that all phi_T lie on the grid
+        '''Ensures that all input phi_T lie on the grid after doing calculations'''        
         pass
 
     def test_test(self):

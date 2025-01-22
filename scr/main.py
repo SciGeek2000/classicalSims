@@ -53,11 +53,11 @@ if __name__ == "__main__":
 
 
     ### Run Circuit ###
-    for EJ in range(1, 30, 10):
-        circuit = run_leg(EJ, 10)
-        # circuit = run_sym_linrhombus(EJ, 1, 0)
+    for EJ in range(1, 30, 30):
+        # circuit = run_leg(EJ, 10)
+        circuit = run_asym_linrhombus(EJ, 1,2,3, 0)
         print(EJ)
-        plot_circuit_class(circuit)
+        plot_circuit_class(circuit, save=True)
 
     # EJ = 1
     # circuit = run_leg(EJ,1)

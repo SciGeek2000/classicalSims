@@ -15,4 +15,8 @@
         "-p",
         "*test*.py"
     ],
+    "editor.autoClosingBrackets": "never",
+    "editor.autoClosingComments": "never",
+    "editor.autoClosingQuotes": "never",
+    "editor.autoClosingDelete": "never",
 }
