@@ -11,12 +11,25 @@ from scr.helper_main import *
 class LegTests(unittest.TestCase):
     def setUp(self):
         '''Run before all tests automatically'''
-        self.leg = Leg(JJ(1), Inductor(1))
+        grid_spacing = 0.005
+        brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are accounted for
+        self.phi_T = np.arange(-brillouin_zone*np.pi, brillouin_zone*np.pi, grid_spacing)
+        set_units('Ones')
+        self.nonhyst_leg = Leg(JJ(1), Inductor(1))
+        self.hyst_leg = Leg(JJ(40), Inductor(1))
 
     def test_range(self):
-        self.assert_(1==1)
-        # Ensures that simulation is properly bounded between min and max of simulation run
-        pass
+        '''Ensures output phi_T range does not exceed input phi_T range'''
+        self.nonhyst_leg.calculate_circuit(self.phi_T)
+        self.hyst_leg.calculate_circuit(self.phi_T)
+        self.assertTrue(
+          np.max(self.phi_T) >= np.max(self.hyst_leg.phi_T) and
+          np.min(self.phi_T) <= np.min(self.hyst_leg.phi_T),
+          'Bounds are violated in hystertic leg')       
+        self.assertTrue(
+          np.max(self.phi_T) >= np.max(self.nonhyst_leg.phi_T) and
+          np.min(self.phi_T) <= np.max(self.nonhyst_leg.phi_T),
+          'Bounds are violated in non-hysteretic leg')
         
     def test_gridded_values(self):
         # Ensures that all phi_T lie on the grid

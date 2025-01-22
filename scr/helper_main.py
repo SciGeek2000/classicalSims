@@ -47,17 +47,38 @@ def make_assymmetric_linrhombus(EJ1, EL1, EJ2, EL2) -> LinRhombus:
     return linrhombus
 
 def plot_circuit_class(circuit):
+    def sym_legend(ax, circuit):
+        ax.text(0.025, 0.96,
+          rf'$E_J = {circuit.EJ:0.3f}$'
+          '\n'
+          rf'$E_L = {circuit.EL:0.3f}$'
+          '\n'
+          rf'$E_J/E_L = {(circuit.EJ/circuit.EL):0.3f}$',
+          transform=ax.transAxes, fontsize=10, va='top', 
+          bbox={'boxstyle':'round', 'alpha':0.2, 'color':'black'})
+
+    def asym_legend(ax, circuit):
+        pass
+    
     size = 0.5
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15,6))
-    ax[0].scatter(circuit.phi_T, circuit.I, s=size, c=circuit.stability_colormap)
-    ax[0].set_xlabel(r'$\phi_T$')
+    ax[0].scatter(circuit.phi_T/(np.pi), circuit.I, s=size, c=circuit.stability_colormap)
+    ax[0].set_xlabel(r'$\phi_T/\pi$')
     ax[0].set_ylabel(r'I')
     ax[0].set_title(f'Current Phase Relation of {circuit.name}')
     ax[0].grid()
-    ax[1].scatter(circuit.phi_T, circuit.E, s=size, c=circuit.stability_colormap)
-    ax[1].set_xlabel(r'$\phi_T$')
+    if circuit.name in ('Symmetric Rhombus', 'JJ + Inductor'): sym_legend(ax[0], circuit)
+    elif circuit.name == 'Asymmetric Rhombus': asym_legend(ax[0], circuit)
+    ax[1].scatter(circuit.phi_T/(np.pi), circuit.E, s=size, c=circuit.stability_colormap)
+    ax[1].set_xlabel(r'$\phi_T/\pi$')
     ax[1].set_ylabel(r'I')
     ax[1].set_title(f'Energy Phase Relation of {circuit.name}')
     ax[1].grid()
+    if circuit.name in ('Symmetric Rhombus', 'JJ + Inductor'): sym_legend(ax[1], circuit)
+    elif circuit.name == 'Asymmetric Rhombus': asym_legend(ax[1], circuit)
     fig.tight_layout()
     plt.show()
+
+    # for lh in leg.legend_handles:
+    #     lh.set_alpha(1)
+    #     lh.set_sizes([100])

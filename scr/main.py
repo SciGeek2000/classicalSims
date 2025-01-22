@@ -13,8 +13,8 @@ from matplotlib.ticker import MultipleLocator
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from tqdm import tqdm
-from classes.helper_circuit_elements import *
 from classes.circuit_elements import *
+from classes.helper_circuit_elements import *
 from helper_main import *
 
 
@@ -52,8 +52,13 @@ if __name__ == "__main__":
         return linrhombus
 
 
-    print('hi')
     ### Run Circuit ###
+    for EJ in range(1, 30, 10):
+        circuit = run_leg(EJ, 10)
+        # circuit = run_sym_linrhombus(EJ, 1, 0)
+        print(EJ)
+        plot_circuit_class(circuit)
+
     # EJ = 1
     # circuit = run_leg(EJ,1)
     # print(f'EJ = {EJ}')

@@ -24,11 +24,11 @@ def set_units(unit_name: str) -> None:
         raise Exception('Not a valid unit yet')
 
 
-class JJ: ...
-class Inductor: ...
-class Leg: ...
-class LinRhombus: ...
-class Cos2Phi: ...
+# class JJ: ...
+# class Inductor: ...
+# class Leg: ...
+# class LinRhombus: ...
+# class Cos2Phi: ...
 
 
 class JJ:
@@ -108,6 +108,8 @@ class Leg:
         Leg.name = 'JJ + Inductor'
         self.junction = junction
         self.ind = ind
+        self.EJ = self.junction.EJ
+        self.EL = self.ind.EL
     def calculate_circuit(self, phase, threaded_flux=0) -> np.ndarray:
         self.phase = phase
         self.current(phase, threaded_flux)
@@ -170,9 +172,11 @@ class LinRhombus:
         self.leg1 = leg1
         self.leg2 = leg2
         if leg1.junction.EJ == leg2.junction.EJ and leg1.ind.EL == leg2.ind.EL: 
-            self.name = 'Asymmetric Rhombus'
-        else:
             self.name = 'Symmetric Rhombus'
+            self.EJ = leg1.junction.EJ
+            self.EL = leg1.ind.EL
+        else:
+            self.name = 'Asymmetric Rhombus'
             
 
     def calculate_circuit(self, phase, threaded_flux=np.pi):
