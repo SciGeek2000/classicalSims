@@ -1,6 +1,6 @@
 '''A module which defines the classes used for the classical simulation'''
 import numpy as np
-from classes.helper_circuit_elements import *
+from lib.circuit_calcs import *
 
 hbar = 1
 e = 1
@@ -22,13 +22,6 @@ def set_units(unit_name: str) -> None:
         pass
     else:
         raise Exception('Not a valid unit yet')
-
-
-# class JJ: ...
-# class Inductor: ...
-# class Leg: ...
-# class LinRhombus: ...
-# class Cos2Phi: ...
 
 
 class JJ:
@@ -221,14 +214,3 @@ class LinRhombus:
 
     def __call__(self):
         pass
-
-
-# Find sign changes and interpolate (or just choose smallest difference)
-        # Append these to a new array which contains all the relevant info [phi, I, chi]
-        # while (sign changes occurs within xi block in positive direction):
-            # calculate an adjacent xi block
-            # append new sign changes to phi array with all relevant values
-            # actually need to look at an identical matrix with the ind_phase + 2pi and see if anything changes
-        # while (sign changes occurs within xi block in negative direction):
-            # repeat above process
-        # once done, select all 

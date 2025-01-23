@@ -1,21 +1,14 @@
 '''Main .py for running classical simulations'''
 
-import sys
 import numpy as np
-import matplotlib as mpl
 import matplotlib.style as mplstyle
-import datetime
-import pickle
 from pathlib import Path
 from matplotlib import pyplot as plt
-from matplotlib.offsetbox import AnchoredText
-from matplotlib.ticker import MultipleLocator
-from scipy.interpolate import interp1d
-from scipy.optimize import curve_fit
 from tqdm import tqdm
 from classes.circuit_elements import *
+from lib.circuit_calcs import *
+from scr.io_helper import *
 from classes.helper_circuit_elements import *
-from helper_main import *
 
 
 if __name__ == "__main__":
@@ -25,7 +18,10 @@ if __name__ == "__main__":
     '''
 
     grid_spacing = 0.005
-    brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are accounted for
+    brillouin_zone = 1
+    '''Should always be set to one, given all mod 2pi solutions are accounted for. Only relevant to
+    set to other than one if the linearrhombus is to be analyzed as a part of a broader circuit in
+    which the phi_T being non-compact is physically meaningful'''
     phi_T = np.arange(-brillouin_zone*np.pi, brillouin_zone*np.pi, grid_spacing)
 
     set_units('Ones')
@@ -52,20 +48,22 @@ if __name__ == "__main__":
         return linrhombus
 
 
-    ### Run Circuit ###
-    for EJ in range(1, 30, 30):
-        # circuit = run_leg(EJ, 10)
-        circuit = run_asym_linrhombus(EJ, 1,2,3, 0)
-        print(EJ)
-        plot_circuit_class(circuit, save=True)
+    ### Run Circuit ###############################################################################
+    for EJ in range(1, 2, 1):
+        circuit = run_sym_linrhombus(10, 1)
+        plot_circuit_class(circuit.leg1)
+        plot_circuit_class(circuit.leg2)
+        plot_circuit_class(circuit)
+    
+    ### EXTRA CODE ################################################################################
+    '''
+    params = command_line_arg_setting()
+    run_leg(*params)
 
-    # EJ = 1
-    # circuit = run_leg(EJ,1)
-    # print(f'EJ = {EJ}')
-    # plot_circuit_class(circuit)
-    
-    ### EXTRA CODE ###
-    # params = command_line_arg_setting()
-    # run_leg(*params)
-    
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.scatter(circuit.phi_T, circuit.I, circuit.E, s=0.5, c=circuit.stability_colormap)
+    plt.show()
+    '''
+
 # NOTE: BUG: FOR TYPICAL VALUES OF EJ AND EL, THE CPR LOOKS OFF!

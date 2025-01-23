@@ -1,0 +1,4 @@
+python Importable_SCqubits_Cos2phi.py EJ0_010__EC10_000__EL0_010__C0_100__.yaml
+python Importable_SCqubits_Cos2phi.py EJ0_010__EC10_000__EL0_010__C100_000__.yaml
+python Importable_SCqubits_Cos2phi.py EJ0_010__EC0_100__EL0_010__C0_100__.yaml
+python Importable_SCqubits_Cos2phi.py EJ0_010__EC0_100__EL0_010__C100_000__.yaml

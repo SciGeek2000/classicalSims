@@ -1,18 +1,20 @@
 import unittest
-from classes.helper_circuit_elements import *
+from lib.circuit_calcs import *
 from classes.circuit_elements import *
-from scr.helper_main import *
+from scr.io_helper import *
 
 # File names must start unless a new pattern is defined with the -p flag
 # Class names can be arbitrary, but must be derived from the baseclass unittest.TestCase
 # The setUp method is run before every test
 # All methods for testing need to match the pattern "test*"
 
+
+
 class LegTests(unittest.TestCase):
     def setUp(self):
         '''Run before all tests automatically'''
         grid_spacing = 0.005
-        brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are accounted for
+        brillouin_zone = 1 # Should always be set to one (all mod 2pi solutions are accounted for)
         self.phi_T = np.arange(-brillouin_zone*np.pi, brillouin_zone*np.pi, grid_spacing)
         set_units('Ones')
         self.nonhyst_leg = Leg(JJ(1), Inductor(1))
@@ -43,7 +45,7 @@ class LinRhombusTests(unittest.TestCase):
     def setUp(self):
         '''Run before all tests automatically'''
         grid_spacing = 0.005
-        brillouin_zone = 1 # Should always be set to one, given all mod 2pi solutions are accounted for
+        brillouin_zone = 1 # Should always be set to one (all mod 2pi solutions are accounted for)
         self.phi_T = np.arange(-brillouin_zone*np.pi, brillouin_zone*np.pi, grid_spacing)
         set_units('Ones')
         leg1 = Leg(JJ(EJ=1), Inductor(EL=1))
